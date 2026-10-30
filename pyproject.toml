@@ -7,9 +7,11 @@ requires-python = ">=3.12"
 dependencies = [
     "en-core-web-lg",
     "fastapi[standard]>=0.141.1",
+    "matplotlib>=3.11.2",
     "spacy>=3.8.16",
     "torch>=2.14.1",
     "torchvision>=0.29.1",
+    "tqdm>=4.70.1",
 ]
 
 # Extra package index that hosts the CPU-only PyTorch builds
