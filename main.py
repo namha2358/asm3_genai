@@ -1,10 +1,12 @@
 # main.py
 from fastapi import FastAPI, HTTPException, UploadFile, File   # HTTPException = proper error codes; UploadFile/File = image uploads
+from fastapi.responses import Response                         # returns raw bytes (the PNG) instead of JSON
 from pydantic import BaseModel                                 # for validating request bodies
 
 from app.bigram_model import BigramModel       # bigram logic
 from app.embeddings import EmbeddingModel      # spaCy embedding logic
 from app.classifier import predict             # CNN image classification
+from app.gan_generator import generate_digits_png   # GAN digit generation
 
 app = FastAPI()
 
@@ -35,6 +37,10 @@ class EmbeddingRequest(BaseModel):
 class SimilarityRequest(BaseModel):
     word1: str
     word2: str
+
+class DigitGenerationRequest(BaseModel):
+    num_samples: int = 10                      # how many digits to generate (1-64)
+    seed: int | None = None                    # optional: same seed -> same digits
 
 
 # Endpoints 
@@ -88,3 +94,14 @@ async def classify_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Could not read the uploaded image.")
 
     return {"filename": file.filename, **result}
+
+# GAN digit generator
+# POST /generate_digits: returns a PNG grid of handwritten digits created by the GAN trained on MNIST
+@app.post("/generate_digits")
+def generate_digits(request: DigitGenerationRequest):
+    # Keep the grid a reasonable size
+    if not 1 <= request.num_samples <= 64:
+        raise HTTPException(status_code=422, detail="num_samples must be between 1 and 64")
+
+    png_bytes = generate_digits_png(request.num_samples, request.seed)
+    return Response(content=png_bytes, media_type="image/png")
