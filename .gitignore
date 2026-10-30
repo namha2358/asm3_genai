@@ -10,7 +10,7 @@ wheels/
 .venv
 .env
 
-# Downloaded CIFAR10 dataset (~170 MB, not committed)
+# Downloaded datasets (CIFAR10, MNIST), not committed
 data/
 
 # Local test image
